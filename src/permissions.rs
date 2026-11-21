@@ -201,9 +201,6 @@ mod tests {
         );
         let mut invalid = request();
         invalid.actions = vec![" ".into()];
-        assert_eq!(
-            invalid.validate(),
-            Err(RequestValidationError::EmptyAction)
-        );
+        assert_eq!(invalid.validate(), Err(RequestValidationError::EmptyAction));
     }
 }
