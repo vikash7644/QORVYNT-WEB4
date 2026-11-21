@@ -24,6 +24,7 @@ Early foundation implementation. The first milestone is a small, auditable autho
 - `src/identity.rs` — canonical key-derived DID identifiers, strict Ed25519 verification, and signed key rotation
 - `src/resolver.rs` — signed identity registration, rotation, revocation, and active-key resolution
 - `src/storage.rs` — append-only file-backed lifecycle log and signature-verified replay
+- `src/protocol.rs` — versioned signed federation envelopes and in-memory replay protection
 - `docs/ARCHITECTURE.md` — system boundaries and phased roadmap
 
 ## Initial local checks
@@ -33,4 +34,4 @@ cargo test
 cargo fmt --check
 ```
 
-The identity module defines a project-specific `did:qorvynt:` v1 key identifier; it is not a W3C DID-method conformance claim. Strict Ed25519 verification, signed key rotation, and cryptographically verified owner-consent primitives are implemented. File-backed identity lifecycle history and verified replay are implemented as a local single-writer storage adapter. Tamper-evident checkpoints, multi-process coordination, key recovery, encrypted storage, network transport, and browser integration are not yet implemented.
+The identity module defines a project-specific `did:qorvynt:` v1 key identifier; it is not a W3C DID-method conformance claim. Strict Ed25519 verification, signed key rotation, and cryptographically verified owner-consent primitives are implemented. File-backed identity lifecycle history and verified replay are implemented as a local single-writer storage adapter. Tamper-evident checkpoints, multi-process coordination, key recovery, encrypted storage, live network transport, durable replay protection, and browser integration are not yet implemented. The federation module currently provides a signed, versioned message envelope with strict recipient, time-window, payload-size, and replay checks; it is transport-independent and not a running peer network.
