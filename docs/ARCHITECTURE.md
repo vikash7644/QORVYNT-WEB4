@@ -17,7 +17,8 @@ Build a federated, user-controlled application network in which people can deleg
 
 - No token, coin, chain consensus, or wallet is required.
 - No implicit trust based on a domain, agent name, or network membership.
-- No claim of production cryptography or decentralized identity until key formats, signature verification, rotation, recovery, and interoperability tests exist.
+- The `did:qorvynt:` identifier is a project-specific v1 draft, not a claim of W3C DID-method registration or conformance.
+- No production-ready identity resolver, key recovery, or durable revocation service is claimed.
 - QORVYNT Lang and Fleur Network remain separate repositories and products.
 
 ## Authorization contract
@@ -40,17 +41,19 @@ A request is denied when any binding differs, the grant has expired, or it is re
 - [ ] CI validation and code review
 
 ### M1 — identity and key lifecycle
-- [ ] DID method specification and canonical encoding
-- [ ] Ed25519 key binding and signature verification
-- [ ] Key rotation, recovery, and revocation semantics
-- [ ] Test vectors and cross-implementation fixtures
+- [x] Define canonical project-specific `did:qorvynt:` v1 identifiers from Ed25519 public keys
+- [x] Verify domain-separated Ed25519 signatures with strict verification
+- [x] Require old-key authorization and new-key proof for rotation statements
+- [x] Model identity creation and revocation timestamps
+- [ ] Durable rotation/revocation history and resolver enforcement
+- [ ] Key recovery, interoperability fixtures, and independent security review
 
 ### M2 — agent permissions and audit
 - [x] Validate explicit permission requests (non-empty, unique actions, bounded validity)
-- [x] Convert an authenticated owner approval into an exact-scope capability
-- [x] Define structured approval audit events
-- [ ] Authenticated consent UI and durable tamper-evident audit storage
-- [ ] Resource-side enforcement middleware
+- [x] Convert a declared resource-owner approval into an exact-scope capability
+- [x] Define structured approval audit event types
+- [ ] Authenticate the approver before accepting approval
+- [ ] Durable tamper-evident audit storage and resource-side enforcement middleware
 - [ ] Denial/revocation workflow and human-readable consent receipts
 
 ### M3 — personal data vault
