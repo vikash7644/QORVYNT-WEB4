@@ -3,7 +3,7 @@
 //! These are deterministic domain primitives only. They do not persist an
 //! append-only log, authenticate approvers, or provide cryptographic receipts.
 
-use crate::{Action, Capability, PrincipalId, ResourceId};
+use crate::{identity::IdentityKey, Action, Capability, PrincipalId, ResourceId};
 
 /// A request for narrowly-scoped access, submitted by an already identified agent.
 #[derive(Debug, Clone, PartialEq, Eq)]
