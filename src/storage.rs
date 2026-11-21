@@ -26,11 +26,15 @@ pub enum StorageError {
 }
 
 impl From<std::io::Error> for StorageError {
-    fn from(error: std::io::Error) -> Self { Self::Io(error) }
+    fn from(error: std::io::Error) -> Self {
+        Self::Io(error)
+    }
 }
 
 impl From<ResolverError> for StorageError {
-    fn from(error: ResolverError) -> Self { Self::Resolver(error) }
+    fn from(error: ResolverError) -> Self {
+        Self::Resolver(error)
+    }
 }
 
 /// Pluggable append-only operation log. Implementations must append atomically
@@ -47,20 +51,26 @@ pub struct FileIdentityLog {
 
 impl FileIdentityLog {
     pub fn open(path: impl AsRef<Path>) -> Self {
-        Self { path: path.as_ref().to_path_buf() }
+        Self {
+            path: path.as_ref().to_path_buf(),
+        }
     }
 }
 
 impl IdentityLog for FileIdentityLog {
     fn load(&mut self) -> Result<Vec<IdentityOperation>, StorageError> {
-        if !self.path.exists() { return Ok(Vec::new()); }
+        if !self.path.exists() {
+            return Ok(Vec::new());
+        }
         let mut file = File::open(&self.path)?;
         let mut bytes = Vec::new();
         file.read_to_end(&mut bytes)?;
         let mut cursor = 0;
         let mut operations = Vec::new();
         while cursor < bytes.len() {
-            if bytes.len() - cursor < 4 { return Err(StorageError::CorruptLog); }
+            if bytes.len() - cursor < 4 {
+                return Err(StorageError::CorruptLog);
+            }
             let length = u32::from_be_bytes(bytes[cursor..cursor + 4].try_into().unwrap()) as usize;
             cursor += 4;
             if length == 0 || length > MAX_RECORD_BYTES || bytes.len() - cursor < length {
@@ -77,7 +87,10 @@ impl IdentityLog for FileIdentityLog {
         if record.is_empty() || record.len() > MAX_RECORD_BYTES {
             return Err(StorageError::RecordTooLarge);
         }
-        let mut file = OpenOptions::new().create(true).append(true).open(&self.path)?;
+        let mut file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&self.path)?;
         file.write_all(&(record.len() as u32).to_be_bytes())?;
         file.write_all(&record)?;
         file.sync_data()?;
@@ -99,7 +112,9 @@ impl<L: IdentityLog> PersistentIdentityResolver<L> {
         Ok(Self { resolver, log })
     }
 
-    pub fn resolver(&self) -> &IdentityResolver { &self.resolver }
+    pub fn resolver(&self) -> &IdentityResolver {
+        &self.resolver
+    }
 
     pub fn register(
         &mut self,
@@ -109,7 +124,10 @@ impl<L: IdentityLog> PersistentIdentityResolver<L> {
     ) -> Result<(), StorageError> {
         let mut candidate = self.resolver.clone();
         candidate.register(key, created_at, proof)?;
-        let operation = candidate.operations().last().ok_or(StorageError::CorruptLog)?;
+        let operation = candidate
+            .operations()
+            .last()
+            .ok_or(StorageError::CorruptLog)?;
         self.log.append(operation)?;
         self.resolver = candidate;
         Ok(())
@@ -118,7 +136,10 @@ impl<L: IdentityLog> PersistentIdentityResolver<L> {
     pub fn rotate(&mut self, rotation: KeyRotation) -> Result<(), StorageError> {
         let mut candidate = self.resolver.clone();
         candidate.rotate(rotation)?;
-        let operation = candidate.operations().last().ok_or(StorageError::CorruptLog)?;
+        let operation = candidate
+            .operations()
+            .last()
+            .ok_or(StorageError::CorruptLog)?;
         self.log.append(operation)?;
         self.resolver = candidate;
         Ok(())
@@ -132,7 +153,10 @@ impl<L: IdentityLog> PersistentIdentityResolver<L> {
     ) -> Result<(), StorageError> {
         let mut candidate = self.resolver.clone();
         candidate.revoke(did, revoked_at, signature)?;
-        let operation = candidate.operations().last().ok_or(StorageError::CorruptLog)?;
+        let operation = candidate
+            .operations()
+            .last()
+            .ok_or(StorageError::CorruptLog)?;
         self.log.append(operation)?;
         self.resolver = candidate;
         Ok(())
@@ -142,7 +166,11 @@ impl<L: IdentityLog> PersistentIdentityResolver<L> {
 fn encode_operation(operation: &IdentityOperation) -> Result<Vec<u8>, StorageError> {
     let mut out = Vec::new();
     match operation {
-        IdentityOperation::Register { did, created_at, proof } => {
+        IdentityOperation::Register {
+            did,
+            created_at,
+            proof,
+        } => {
             out.push(1);
             out.extend_from_slice(&created_at.to_be_bytes());
             put_string(&mut out, did)?;
@@ -156,7 +184,11 @@ fn encode_operation(operation: &IdentityOperation) -> Result<Vec<u8>, StorageErr
             out.extend_from_slice(&rotation.old_key_signature);
             out.extend_from_slice(&rotation.new_key_proof);
         }
-        IdentityOperation::Revoke { did, revoked_at, signature } => {
+        IdentityOperation::Revoke {
+            did,
+            revoked_at,
+            signature,
+        } => {
             out.push(3);
             out.extend_from_slice(&revoked_at.to_be_bytes());
             put_string(&mut out, did)?;
@@ -174,7 +206,11 @@ fn decode_operation(bytes: &[u8]) -> Result<IdentityOperation, StorageError> {
         1 => {
             let did = take_string(bytes, &mut cursor)?;
             let proof = take(bytes, &mut cursor, 64)?.try_into().unwrap();
-            IdentityOperation::Register { did, created_at: timestamp, proof }
+            IdentityOperation::Register {
+                did,
+                created_at: timestamp,
+                proof,
+            }
         }
         2 => {
             let old_did = take_string(bytes, &mut cursor)?;
@@ -182,17 +218,27 @@ fn decode_operation(bytes: &[u8]) -> Result<IdentityOperation, StorageError> {
             let old_key_signature = take(bytes, &mut cursor, 64)?.try_into().unwrap();
             let new_key_proof = take(bytes, &mut cursor, 64)?.try_into().unwrap();
             IdentityOperation::Rotate(KeyRotation {
-                old_did, new_did, effective_at: timestamp, old_key_signature, new_key_proof,
+                old_did,
+                new_did,
+                effective_at: timestamp,
+                old_key_signature,
+                new_key_proof,
             })
         }
         3 => {
             let did = take_string(bytes, &mut cursor)?;
             let signature = take(bytes, &mut cursor, 64)?.try_into().unwrap();
-            IdentityOperation::Revoke { did, revoked_at: timestamp, signature }
+            IdentityOperation::Revoke {
+                did,
+                revoked_at: timestamp,
+                signature,
+            }
         }
         _ => return Err(StorageError::CorruptLog),
     };
-    if cursor != bytes.len() { return Err(StorageError::CorruptLog); }
+    if cursor != bytes.len() {
+        return Err(StorageError::CorruptLog);
+    }
     Ok(operation)
 }
 
@@ -219,10 +265,16 @@ fn take<'a>(bytes: &'a [u8], cursor: &mut usize, length: usize) -> Result<&'a [u
 mod tests {
     use super::*;
     use ed25519_dalek::{Signer, SigningKey};
-    use std::{fs, time::{SystemTime, UNIX_EPOCH}};
+    use std::{
+        fs,
+        time::{SystemTime, UNIX_EPOCH},
+    };
 
     fn temp_path() -> PathBuf {
-        let nonce = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
         std::env::temp_dir().join(format!("qorvynt-web4-identity-{nonce}.log"))
     }
 
@@ -232,14 +284,18 @@ mod tests {
         let signer = SigningKey::from_bytes(&[61; 32]);
         let key = IdentityKey::from_public_key(signer.verifying_key().to_bytes()).unwrap();
         let payload = IdentityResolver::registration_payload(key.did(), 100);
-        let proof = signer.sign(&IdentityKey::signature_payload(&payload)).to_bytes();
+        let proof = signer
+            .sign(&IdentityKey::signature_payload(&payload))
+            .to_bytes();
         {
-            let mut persistent = PersistentIdentityResolver::open(FileIdentityLog::open(&path)).unwrap();
+            let mut persistent =
+                PersistentIdentityResolver::open(FileIdentityLog::open(&path)).unwrap();
             persistent.register(key.clone(), 100, &proof).unwrap();
             assert!(persistent.resolver().resolve(key.did(), 100).is_some());
         }
         {
-            let persistent = PersistentIdentityResolver::open(FileIdentityLog::open(&path)).unwrap();
+            let persistent =
+                PersistentIdentityResolver::open(FileIdentityLog::open(&path)).unwrap();
             assert!(persistent.resolver().resolve(key.did(), 100).is_some());
             assert_eq!(persistent.resolver().events().len(), 1);
         }
@@ -260,7 +316,8 @@ mod tests {
         let path = temp_path();
         let signer = SigningKey::from_bytes(&[62; 32]);
         let key = IdentityKey::from_public_key(signer.verifying_key().to_bytes()).unwrap();
-        let mut persistent = PersistentIdentityResolver::open(FileIdentityLog::open(&path)).unwrap();
+        let mut persistent =
+            PersistentIdentityResolver::open(FileIdentityLog::open(&path)).unwrap();
         assert!(persistent.register(key, 10, &[0; 64]).is_err());
         assert!(!path.exists());
     }
