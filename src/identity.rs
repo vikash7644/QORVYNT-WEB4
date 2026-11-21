@@ -30,7 +30,9 @@ impl IdentityKey {
             .strip_prefix(DID_PREFIX)
             .ok_or(IdentityError::InvalidDid)?;
         if encoded.len() != 64
-            || !encoded\n                .bytes()\n                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+            || !encoded
+                .bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
         {
             return Err(IdentityError::InvalidDid);
         }
