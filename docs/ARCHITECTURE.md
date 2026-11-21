@@ -45,7 +45,9 @@ A request is denied when any binding differs, the grant has expired, or it is re
 - [x] Verify domain-separated Ed25519 signatures with strict verification
 - [x] Require old-key authorization and new-key proof for rotation statements
 - [x] Model identity creation and revocation timestamps
-- [x] In-memory trusted-key resolver with signed registration, rotation, revocation, and append-only event history\n- [x] File-backed append-only identity operation log with signature-verified replay and fail-closed truncated-log handling\n- [ ] Tamper-evident checkpoints, multi-process coordination, and production resolver service
+- [x] In-memory trusted-key resolver with signed registration, rotation, revocation, and append-only event history
+- [x] File-backed append-only identity operation log with signature-verified replay and fail-closed truncated-log handling
+- [ ] Tamper-evident checkpoints, multi-process coordination, and production resolver service
 - [ ] Key recovery, interoperability fixtures, and independent security review
 
 ### M2 — agent permissions and audit
