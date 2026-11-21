@@ -60,9 +60,12 @@ A request is denied when any binding differs, the grant has expired, or it is re
 - [ ] Denial/revocation workflow and human-readable consent receipts
 
 ### M3 — personal data vault
-- [ ] Encryption envelope and key ownership model
-- [ ] Export, deletion, backup, and recovery
-- [ ] Per-resource and per-field authorization
+- [x] XChaCha20-Poly1305 authenticated encryption primitive
+- [x] Bind owner DID, resource ID, and format version as authenticated associated data
+- [x] Reject wrong owner/resource, wrong key, nonce tampering, and ciphertext tampering
+- [ ] Secure key generation/storage/wrapping and nonce lifecycle management
+- [ ] Durable vault backend, export, deletion, backup, and recovery
+- [ ] Per-resource and per-field authorization enforcement
 
 ### M4 — federation
 - [x] Signed, versioned transport-independent message envelope
