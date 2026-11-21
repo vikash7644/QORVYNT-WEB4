@@ -21,7 +21,7 @@ Early foundation implementation. The first milestone is a small, auditable autho
 
 - `src/lib.rs` — exact-match capability authorization core
 - `src/permissions.rs` — permission request validation, approval-to-capability conversion, and structured audit event types
-- `src/identity.rs` — canonical key-derived DID identifiers, strict Ed25519 verification, signed key rotation, and local revocation-time model
+- `src/identity.rs` — canonical key-derived DID identifiers, strict Ed25519 verification, and signed key rotation\n- `src/resolver.rs` — signed identity registration, rotation, revocation, and active-key resolution\n- `src/storage.rs` — append-only file-backed lifecycle log and signature-verified replay
 - `docs/ARCHITECTURE.md` — system boundaries and phased roadmap
 
 ## Initial local checks
@@ -31,4 +31,4 @@ cargo test
 cargo fmt --check
 ```
 
-The identity module defines a project-specific `did:qorvynt:` v1 key identifier; it is not a W3C DID-method conformance claim. Strict Ed25519 verification, signed key rotation, and cryptographically verified owner-consent primitives are implemented. Durable identity resolution/revocation history, key recovery, encrypted storage, network transport, and browser integration are not yet implemented.
+The identity module defines a project-specific `did:qorvynt:` v1 key identifier; it is not a W3C DID-method conformance claim. Strict Ed25519 verification, signed key rotation, and cryptographically verified owner-consent primitives are implemented. File-backed identity lifecycle history and verified replay are implemented as a local single-writer storage adapter. Tamper-evident checkpoints, multi-process coordination, key recovery, encrypted storage, network transport, and browser integration are not yet implemented.
