@@ -283,13 +283,9 @@ mod tests {
         let approval_signature = signer
             .sign(&IdentityKey::signature_payload(&approval_payload))
             .to_bytes();
-        assert!(approve_request_with_resolver(
-            &request,
-            &resolver,
-            200,
-            &approval_signature
-        )
-        .is_ok());
+        assert!(
+            approve_request_with_resolver(&request, &resolver, 200, &approval_signature).is_ok()
+        );
 
         let revocation = IdentityResolver::revocation_payload(owner_key.did(), 300);
         let revocation_signature = signer
@@ -299,12 +295,7 @@ mod tests {
             .revoke(owner_key.did(), 300, &revocation_signature)
             .unwrap();
         assert_eq!(
-            approve_request_with_resolver(
-                &request,
-                &resolver,
-                300,
-                &approval_signature
-            ),
+            approve_request_with_resolver(&request, &resolver, 300, &approval_signature),
             Err(ApprovalError::ApproverIdentityNotActive)
         );
     }
