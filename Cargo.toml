@@ -1,0 +1,11 @@
+[package]
+name = "qorvynt-web4-core"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Policy-first authorization primitives for QORVYNT Web4"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
