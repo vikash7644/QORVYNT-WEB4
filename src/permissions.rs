@@ -4,7 +4,7 @@
 //! consent, but the caller must still check key activity in a trusted resolver.
 //! Audit events are not persisted by this module.
 
-use crate::{identity::IdentityKey, Action, Capability, PrincipalId, ResourceId};
+use crate::{\n    identity::IdentityKey, resolver::IdentityResolver, Action, Capability, PrincipalId, ResourceId,\n};
 
 /// A request for narrowly-scoped access, submitted by an already identified agent.
 #[derive(Debug, Clone, PartialEq, Eq)]
