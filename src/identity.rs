@@ -102,10 +102,7 @@ impl KeyRotation {
         }
         let payload = Self::signing_payload(&self.old_did, &self.new_did, self.effective_at);
         old_key.verify_raw(&payload, &self.old_key_signature)?;
-        new_key.verify_raw(
-            &Self::new_key_proof_payload(&payload),
-            &self.new_key_proof,
-        )
+        new_key.verify_raw(&Self::new_key_proof_payload(&payload), &self.new_key_proof)
     }
 }
 
