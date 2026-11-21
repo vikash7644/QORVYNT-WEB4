@@ -104,7 +104,7 @@ pub fn approve_request(
     if approver.trim().is_empty() {
         return Err(ApprovalError::EmptyApprover);
     }
-    if approver != request.resource_owner {
+    if approver != request.resource_owner.as_str() {
         return Err(ApprovalError::ApproverNotResourceOwner);
     }
     if approved_at < request.requested_at || approved_at >= request.expires_at {
