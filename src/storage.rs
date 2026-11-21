@@ -303,6 +303,54 @@ mod tests {
     }
 
     #[test]
+    fn file_log_replays_rotation_and_revocation_after_restart() {
+        let path = temp_path();
+        let old_signer = SigningKey::from_bytes(&[63; 32]);
+        let new_signer = SigningKey::from_bytes(&[64; 32]);
+        let old_key = IdentityKey::from_public_key(old_signer.verifying_key().to_bytes()).unwrap();
+        let new_key = IdentityKey::from_public_key(new_signer.verifying_key().to_bytes()).unwrap();
+
+        {
+            let mut persistent =
+                PersistentIdentityResolver::open(FileIdentityLog::open(&path)).unwrap();
+            let registration = IdentityResolver::registration_payload(old_key.did(), 10);
+            let proof = old_signer
+                .sign(&IdentityKey::signature_payload(&registration))
+                .to_bytes();
+            persistent.register(old_key.clone(), 10, &proof).unwrap();
+
+            let rotation_payload =
+                KeyRotation::signing_payload(old_key.did(), new_key.did(), 20);
+            let rotation = KeyRotation {
+                old_did: old_key.did().to_owned(),
+                new_did: new_key.did().to_owned(),
+                effective_at: 20,
+                old_key_signature: old_signer.sign(&rotation_payload).to_bytes(),
+                new_key_proof: new_signer
+                    .sign(&KeyRotation::new_key_proof_payload(&rotation_payload))
+                    .to_bytes(),
+            };
+            persistent.rotate(rotation).unwrap();
+
+            let revocation = IdentityResolver::revocation_payload(new_key.did(), 30);
+            let signature = new_signer
+                .sign(&IdentityKey::signature_payload(&revocation))
+                .to_bytes();
+            persistent.revoke(new_key.did(), 30, &signature).unwrap();
+        }
+
+        {
+            let persistent =
+                PersistentIdentityResolver::open(FileIdentityLog::open(&path)).unwrap();
+            assert!(persistent.resolver().resolve(old_key.did(), 20).is_none());
+            assert!(persistent.resolver().resolve(new_key.did(), 29).is_some());
+            assert!(persistent.resolver().resolve(new_key.did(), 30).is_none());
+            assert_eq!(persistent.resolver().events().len(), 3);
+        }
+        fs::remove_file(path).unwrap();
+    }
+
+    #[test]
     fn rejects_truncated_log_instead_of_silently_dropping_tail() {
         let path = temp_path();
         fs::write(&path, [0, 0, 0, 8, 1, 2]).unwrap();
