@@ -3,9 +3,10 @@ name = "qorvynt-web4-core"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "Policy-first authorization primitives for QORVYNT Web4"
+description = "Policy-first identity and authorization primitives for QORVYNT Web4"
 
 [lib]
 path = "src/lib.rs"
 
 [dependencies]
+ed25519-dalek = { version = "2.2", default-features = false, features = ["std", "fast"] }
