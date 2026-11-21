@@ -20,7 +20,7 @@ Early foundation implementation. The first milestone is a small, auditable autho
 ## Repository map
 
 - `src/lib.rs` — exact-match capability authorization core
-- `src/permissions.rs` — permission request validation, approval-to-capability conversion, and structured audit event types
+- `src/permissions.rs` — permission request validation, approval-to-capability conversion, and structured audit event types\n- `src/identity.rs` — canonical key-derived DID identifiers, strict Ed25519 verification, signed key rotation, and local revocation-time model
 - `docs/ARCHITECTURE.md` — system boundaries and phased roadmap
 
 ## Initial local checks
@@ -30,4 +30,4 @@ cargo test
 cargo fmt --check
 ```
 
-No production identity, cryptographic signature, encrypted storage, network transport, or browser implementation is claimed yet. Those require separate reviewed milestones.
+The identity module defines a project-specific `did:qorvynt:` v1 key identifier; it is not a W3C DID-method conformance claim. Key verification and rotation primitives are implemented, but identity discovery, durable rotation/revocation history, key recovery, encrypted storage, network transport, and browser integration are not yet implemented.
