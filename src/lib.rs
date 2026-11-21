@@ -6,6 +6,7 @@
 
 pub mod identity;
 pub mod permissions;
+pub mod protocol;
 pub mod resolver;
 pub mod storage;
 
