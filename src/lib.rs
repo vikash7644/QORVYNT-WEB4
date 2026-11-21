@@ -4,7 +4,8 @@
 //! capabilities. It does not authenticate identities, verify signatures, or
 //! access data/network resources.
 
-pub mod identity;\npub mod permissions;
+pub mod identity;
+pub mod permissions;
 
 /// Stable application-level identifier for a user, agent, or service.
 pub type PrincipalId = String;
