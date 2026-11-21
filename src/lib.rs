@@ -150,12 +150,7 @@ mod tests {
             AuthorizationDecision::Deny(DenialReason::SubjectMismatch)
         );
         assert_eq!(
-            grant.permits(
-                "did:qorvynt:user:alice",
-                "vault:other",
-                "data.read",
-                1_000
-            ),
+            grant.permits("did:qorvynt:user:alice", "vault:other", "data.read", 1_000),
             AuthorizationDecision::Deny(DenialReason::ResourceMismatch)
         );
     }
