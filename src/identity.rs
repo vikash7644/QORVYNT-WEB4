@@ -26,9 +26,9 @@ impl IdentityKey {
 
     /// Parse only the canonical lowercase-hex v1 identifier.
     pub fn from_did(did: &str) -> Result<Self, IdentityError> {
-        let encoded = did.strip_prefix(DID_PREFIX).ok_or(IdentityError::InvalidDid)?;
+        let encoded = did\n            .strip_prefix(DID_PREFIX)\n            .ok_or(IdentityError::InvalidDid)?;
         if encoded.len() != 64
-            || !encoded.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+            || !encoded\n                .bytes()\n                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
         {
             return Err(IdentityError::InvalidDid);
         }
@@ -116,7 +116,7 @@ pub struct IdentityRecord {
 impl IdentityRecord {
     pub fn is_active_at(&self, timestamp: u64) -> bool {
         timestamp >= self.created_at
-            && self.revoked_at.map_or(true, |revoked_at| timestamp < revoked_at)
+            && self\n                .revoked_at\n                .map_or(true, |revoked_at| timestamp < revoked_at)
     }
 }
 
@@ -146,7 +146,7 @@ fn encode_hex(bytes: &[u8]) -> String {
 }
 
 fn decode_hex(value: &str) -> Option<Vec<u8>> {
-    value.as_bytes().chunks_exact(2)
+    value\n        .as_bytes()\n        .chunks_exact(2)
         .map(|pair| Some((hex_nibble(pair[0])? << 4) | hex_nibble(pair[1])?))
         .collect()
 }
@@ -186,13 +186,13 @@ mod tests {
         let signer = signing_key(9);
         let identity = IdentityKey::from_public_key(signer.verifying_key().to_bytes()).unwrap();
         let message = b"agent:planner:data.read";
-        let signature = signer.sign(&domain_payload(SIGNATURE_DOMAIN, message)).to_bytes();
+        let signature = signer\n            .sign(&domain_payload(SIGNATURE_DOMAIN, message))\n            .to_bytes();
         assert_eq!(identity.verify(message, &signature), Ok(()));
         assert_eq!(
             identity.verify(b"agent:planner:data.write", &signature),
             Err(IdentityError::InvalidSignature)
         );
-        let other = IdentityKey::from_public_key(signing_key(10).verifying_key().to_bytes()).unwrap();
+        let other =\n            IdentityKey::from_public_key(signing_key(10).verifying_key().to_bytes()).unwrap();
         assert_eq!(
             other.verify(message, &signature),
             Err(IdentityError::InvalidSignature)
