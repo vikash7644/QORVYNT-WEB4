@@ -7,6 +7,7 @@
 pub mod identity;
 pub mod permissions;
 pub mod resolver;
+pub mod storage;
 
 /// Stable application-level identifier for a user, agent, or service.
 pub type PrincipalId = String;
