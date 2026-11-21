@@ -45,7 +45,7 @@ A request is denied when any binding differs, the grant has expired, or it is re
 - [x] Verify domain-separated Ed25519 signatures with strict verification
 - [x] Require old-key authorization and new-key proof for rotation statements
 - [x] Model identity creation and revocation timestamps
-- [ ] Durable rotation/revocation history and resolver enforcement
+- [x] In-memory trusted-key resolver with signed registration, rotation, revocation, and append-only event history\n- [ ] Durable rotation/revocation history and resolver enforcement
 - [ ] Key recovery, interoperability fixtures, and independent security review
 
 ### M2 — agent permissions and audit
@@ -53,7 +53,7 @@ A request is denied when any binding differs, the grant has expired, or it is re
 - [x] Convert a declared resource-owner approval into an exact-scope capability
 - [x] Define structured approval audit event types
 - [x] Verify resource-owner approval signatures against the declared owner key
-- [ ] Resolve owner keys and enforce active/revoked identity status before approval
+- [x] Resolve owner keys and enforce active/revoked identity status before approval (resolver API available; caller integration pending)
 - [ ] Durable tamper-evident audit storage and resource-side enforcement middleware
 - [ ] Denial/revocation workflow and human-readable consent receipts
 
