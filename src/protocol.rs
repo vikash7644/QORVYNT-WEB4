@@ -104,7 +104,9 @@ pub struct ReplayGuard {
 }
 
 impl ReplayGuard {
-    pub fn new() -> Self { Self::default() }
+    pub fn new() -> Self {
+        Self::default()
+    }
 
     pub fn accept(
         &mut self,
@@ -134,7 +136,8 @@ impl ReplayGuard {
             return Err(EnvelopeError::LifetimeTooLong);
         }
         let payload = envelope.signing_payload()?;
-        sender_key.verify(&payload, &envelope.signature)
+        sender_key
+            .verify(&payload, &envelope.signature)
             .map_err(|_| EnvelopeError::InvalidSignature)?;
 
         self.seen.retain(|_, expires_at| *expires_at > now);
@@ -146,7 +149,9 @@ impl ReplayGuard {
         Ok(())
     }
 
-    pub fn tracked_messages(&self) -> usize { self.seen.len() }
+    pub fn tracked_messages(&self) -> usize {
+        self.seen.len()
+    }
 }
 
 fn append_field(output: &mut Vec<u8>, value: &[u8]) {
@@ -169,39 +174,73 @@ mod tests {
     fn accepts_valid_signed_message_once_and_rejects_replay() {
         let (signer, sender) = identity(31);
         let envelope = MessageEnvelope::sign(
-            &sender, "did:qorvynt:node:receiver", "msg-001", 100, 160,
-            b"agent.task".to_vec(), &signer,
-        ).unwrap();
+            &sender,
+            "did:qorvynt:node:receiver",
+            "msg-001",
+            100,
+            160,
+            b"agent.task".to_vec(),
+            &signer,
+        )
+        .unwrap();
         let mut guard = ReplayGuard::new();
-        assert_eq!(guard.accept(&envelope, &sender, "did:qorvynt:node:receiver", 110, 5, 120), Ok(()));
+        assert_eq!(
+            guard.accept(&envelope, &sender, "did:qorvynt:node:receiver", 110, 5, 120),
+            Ok(())
+        );
         assert_eq!(guard.tracked_messages(), 1);
-        assert_eq!(guard.accept(&envelope, &sender, "did:qorvynt:node:receiver", 110, 5, 120), Err(EnvelopeError::Replay));
+        assert_eq!(
+            guard.accept(&envelope, &sender, "did:qorvynt:node:receiver", 110, 5, 120),
+            Err(EnvelopeError::Replay)
+        );
     }
 
     #[test]
     fn rejects_wrong_recipient_expired_and_future_messages() {
         let (signer, sender) = identity(32);
-        let envelope = MessageEnvelope::sign(&sender, "node:b", "msg-002", 100, 160, vec![1], &signer).unwrap();
+        let envelope =
+            MessageEnvelope::sign(&sender, "node:b", "msg-002", 100, 160, vec![1], &signer)
+                .unwrap();
         let mut guard = ReplayGuard::new();
-        assert_eq!(guard.accept(&envelope, &sender, "node:c", 110, 5, 120), Err(EnvelopeError::WrongRecipient));
-        assert_eq!(guard.accept(&envelope, &sender, "node:b", 160, 5, 120), Err(EnvelopeError::MessageExpired));
-        assert_eq!(guard.accept(&envelope, &sender, "node:b", 90, 5, 120), Err(EnvelopeError::IssuedInFuture));
+        assert_eq!(
+            guard.accept(&envelope, &sender, "node:c", 110, 5, 120),
+            Err(EnvelopeError::WrongRecipient)
+        );
+        assert_eq!(
+            guard.accept(&envelope, &sender, "node:b", 160, 5, 120),
+            Err(EnvelopeError::MessageExpired)
+        );
+        assert_eq!(
+            guard.accept(&envelope, &sender, "node:b", 90, 5, 120),
+            Err(EnvelopeError::IssuedInFuture)
+        );
     }
 
     #[test]
     fn rejects_tampering_and_excessive_lifetime() {
         let (signer, sender) = identity(33);
-        let mut envelope = MessageEnvelope::sign(&sender, "node:b", "msg-003", 100, 300, vec![1], &signer).unwrap();
+        let mut envelope =
+            MessageEnvelope::sign(&sender, "node:b", "msg-003", 100, 300, vec![1], &signer)
+                .unwrap();
         let mut guard = ReplayGuard::new();
-        assert_eq!(guard.accept(&envelope, &sender, "node:b", 110, 5, 120), Err(EnvelopeError::LifetimeTooLong));
+        assert_eq!(
+            guard.accept(&envelope, &sender, "node:b", 110, 5, 120),
+            Err(EnvelopeError::LifetimeTooLong)
+        );
         envelope.expires_at = 160;
-        assert_eq!(guard.accept(&envelope, &sender, "node:b", 110, 5, 120), Err(EnvelopeError::InvalidSignature));
+        assert_eq!(
+            guard.accept(&envelope, &sender, "node:b", 110, 5, 120),
+            Err(EnvelopeError::InvalidSignature)
+        );
     }
 
     #[test]
     fn refuses_signing_key_that_does_not_match_sender_identity() {
         let (_, sender) = identity(34);
         let other = SigningKey::from_bytes(&[35; 32]);
-        assert_eq!(MessageEnvelope::sign(&sender, "node:b", "msg-004", 100, 160, vec![], &other), Err(EnvelopeError::SignerDoesNotMatchSender));
+        assert_eq!(
+            MessageEnvelope::sign(&sender, "node:b", "msg-004", 100, 160, vec![], &other),
+            Err(EnvelopeError::SignerDoesNotMatchSender)
+        );
     }
 }
