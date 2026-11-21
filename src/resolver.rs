@@ -12,6 +12,13 @@ const REGISTER_DOMAIN: &[u8] = b"QORVYNT-WEB4-IDENTITY-REGISTER-V1\0";
 const REVOKE_DOMAIN: &[u8] = b"QORVYNT-WEB4-IDENTITY-REVOKE-V1\0";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub enum IdentityOperation {
+    Register { did: String, created_at: u64, proof: [u8; 64] },
+    Rotate(KeyRotation),
+    Revoke { did: String, revoked_at: u64, signature: [u8; 64] },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum IdentityEvent {
     Registered {
         did: String,
@@ -45,16 +52,38 @@ impl From<IdentityError> for ResolverError {
 }
 
 /// A process-local resolver. All lifecycle transitions are signed and ordered.
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct IdentityResolver {
     records: BTreeMap<String, IdentityRecord>,
     events: Vec<IdentityEvent>,
+    operations: Vec<IdentityOperation>,
     last_event_at: Option<u64>,
 }
 
 impl IdentityResolver {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn replay(operations: &[IdentityOperation]) -> Result<Self, ResolverError> {
+        let mut resolver = Self::new();
+        for operation in operations {
+            match operation {
+                IdentityOperation::Register { did, created_at, proof } => {
+                    let key = IdentityKey::from_did(did).map_err(|_| ResolverError::InvalidRotation)?;
+                    resolver.register(key, *created_at, proof)?;
+                }
+                IdentityOperation::Rotate(rotation) => resolver.rotate(rotation.clone())?,
+                IdentityOperation::Revoke { did, revoked_at, signature } => {
+                    resolver.revoke(did, *revoked_at, signature)?;
+                }
+            }
+        }
+        Ok(resolver)
+    }
+
+    pub fn operations(&self) -> &[IdentityOperation] {
+        &self.operations
     }
 
     pub fn registration_payload(did: &str, created_at: u64) -> Vec<u8> {
@@ -92,6 +121,9 @@ impl IdentityResolver {
                 revoked_at: None,
             },
         );
+        self.operations.push(IdentityOperation::Register {
+            did: did.clone(), created_at, proof: *proof,
+        });
         self.events.push(IdentityEvent::Registered {
             did,
             occurred_at: created_at,
@@ -132,6 +164,7 @@ impl IdentityResolver {
                 revoked_at: None,
             },
         );
+        self.operations.push(IdentityOperation::Rotate(rotation.clone()));
         self.events.push(IdentityEvent::Rotated {
             old_did,
             new_did,
@@ -162,6 +195,9 @@ impl IdentityResolver {
         if let Some(record) = self.records.get_mut(did) {
             record.revoked_at = Some(revoked_at);
         }
+        self.operations.push(IdentityOperation::Revoke {
+            did: did.to_owned(), revoked_at, signature: *signature,
+        });
         self.events.push(IdentityEvent::Revoked {
             did: did.to_owned(),
             occurred_at: revoked_at,
