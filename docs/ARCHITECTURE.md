@@ -65,8 +65,11 @@ A request is denied when any binding differs, the grant has expired, or it is re
 - [ ] Per-resource and per-field authorization
 
 ### M4 — federation
-- [ ] Node identity, mutual authentication, replay protection
-- [ ] Versioned message envelope and discovery
+- [x] Signed, versioned transport-independent message envelope
+- [x] Exact recipient binding, bounded message size, expiry/future-time checks
+- [x] In-memory replay guard keyed by sender and message ID
+- [ ] Node identity discovery and live mutual-authenticated transport
+- [ ] Durable/shared replay state, version negotiation, and discovery
 - [ ] Rate limits, abuse reporting, and trust boundaries
 
 ### M5 — Web4 apps and browser
