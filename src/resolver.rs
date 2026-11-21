@@ -13,9 +13,17 @@ const REVOKE_DOMAIN: &[u8] = b"QORVYNT-WEB4-IDENTITY-REVOKE-V1\0";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum IdentityOperation {
-    Register {\n        did: String,\n        created_at: u64,\n        proof: [u8; 64],\n    },
+    Register {
+        did: String,
+        created_at: u64,
+        proof: [u8; 64],
+    },
     Rotate(KeyRotation),
-    Revoke {\n        did: String,\n        revoked_at: u64,\n        signature: [u8; 64],\n    },
+    Revoke {
+        did: String,
+        revoked_at: u64,
+        signature: [u8; 64],
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -79,7 +87,11 @@ impl IdentityResolver {
                     resolver.register(key, *created_at, proof)?;
                 }
                 IdentityOperation::Rotate(rotation) => resolver.rotate(rotation.clone())?,
-                IdentityOperation::Revoke {\n                    did,\n                    revoked_at,\n                    signature,\n                } => {
+                IdentityOperation::Revoke {
+                    did,
+                    revoked_at,
+                    signature,
+                } => {
                     resolver.revoke(did, *revoked_at, signature)?;
                 }
             }
@@ -127,7 +139,9 @@ impl IdentityResolver {
             },
         );
         self.operations.push(IdentityOperation::Register {
-            did: did.clone(),\n            created_at,\n            proof: *proof,
+            did: did.clone(),
+            created_at,
+            proof: *proof,
         });
         self.events.push(IdentityEvent::Registered {
             did,
@@ -169,7 +183,8 @@ impl IdentityResolver {
                 revoked_at: None,
             },
         );
-        self.operations\n            .push(IdentityOperation::Rotate(rotation.clone()));
+        self.operations
+            .push(IdentityOperation::Rotate(rotation.clone()));
         self.events.push(IdentityEvent::Rotated {
             old_did,
             new_did,
@@ -201,7 +216,9 @@ impl IdentityResolver {
             record.revoked_at = Some(revoked_at);
         }
         self.operations.push(IdentityOperation::Revoke {
-            did: did.to_owned(),\n            revoked_at,\n            signature: *signature,
+            did: did.to_owned(),
+            revoked_at,
+            signature: *signature,
         });
         self.events.push(IdentityEvent::Revoked {
             did: did.to_owned(),
