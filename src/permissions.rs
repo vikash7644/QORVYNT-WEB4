@@ -10,6 +10,8 @@ use crate::{Action, Capability, PrincipalId, ResourceId};
 pub struct PermissionRequest {
     pub id: String,
     pub requester: PrincipalId,
+    /// Principal authorized to approve access to this resource.
+    pub resource_owner: PrincipalId,
     pub resource: ResourceId,
     pub actions: Vec<Action>,
     pub requested_at: u64,
@@ -24,6 +26,9 @@ impl PermissionRequest {
         }
         if self.requester.trim().is_empty() {
             return Err(RequestValidationError::EmptyRequester);
+        }
+        if self.resource_owner.trim().is_empty() {
+            return Err(RequestValidationError::EmptyResourceOwner);
         }
         if self.resource.trim().is_empty() {
             return Err(RequestValidationError::EmptyResource);
@@ -50,6 +55,7 @@ impl PermissionRequest {
 pub enum RequestValidationError {
     EmptyRequestId,
     EmptyRequester,
+    EmptyResourceOwner,
     EmptyResource,
     NoActions,
     EmptyAction,
@@ -98,6 +104,9 @@ pub fn approve_request(
     if approver.trim().is_empty() {
         return Err(ApprovalError::EmptyApprover);
     }
+    if approver != request.resource_owner {
+        return Err(ApprovalError::ApproverNotResourceOwner);
+    }
     if approved_at < request.requested_at || approved_at >= request.expires_at {
         return Err(ApprovalError::ApprovalOutsideRequestWindow);
     }
@@ -122,6 +131,7 @@ pub fn approve_request(
 pub enum ApprovalError {
     InvalidRequest(RequestValidationError),
     EmptyApprover,
+    ApproverNotResourceOwner,
     ApprovalOutsideRequestWindow,
 }
 
@@ -133,6 +143,7 @@ mod tests {
         PermissionRequest {
             id: "req-001".into(),
             requester: "did:qorvynt:agent:planner".into(),
+            resource_owner: "did:qorvynt:user:owner".into(),
             resource: "vault:user:notes".into(),
             actions: vec!["data.read".into()],
             requested_at: 100,
@@ -171,6 +182,14 @@ mod tests {
         assert_eq!(
             approve_request(&request(), "owner", 500),
             Err(ApprovalError::ApprovalOutsideRequestWindow)
+        );
+    }
+
+    #[test]
+    fn rejects_non_owner_approval() {
+        assert_eq!(
+            approve_request(&request(), "did:qorvynt:user:other", 200),
+            Err(ApprovalError::ApproverNotResourceOwner)
         );
     }
 
