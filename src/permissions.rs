@@ -19,6 +19,23 @@ pub struct PermissionRequest {
 }
 
 impl PermissionRequest {
+    /// Build an unambiguous, deterministic message for owner consent.
+    pub fn approval_signing_payload(&self, approved_at: u64) -> Vec<u8> {
+        let mut payload = b"QORVYNT-WEB4-PERMISSION-APPROVAL-V1\\0".to_vec();
+        append_field(&mut payload, &self.id);
+        append_field(&mut payload, &self.requester);
+        append_field(&mut payload, &self.resource_owner);
+        append_field(&mut payload, &self.resource);
+        append_u64(&mut payload, self.requested_at);
+        append_u64(&mut payload, self.expires_at);
+        append_u64(&mut payload, approved_at);
+        append_u64(&mut payload, self.actions.len() as u64);
+        for action in &self.actions {
+            append_field(&mut payload, action);
+        }
+        payload
+    }
+
     /// Reject malformed or ambiguous requests before they reach a consent UI.
     pub fn validate(&self) -> Result<(), RequestValidationError> {
         if self.id.trim().is_empty() {
@@ -127,17 +144,46 @@ pub fn approve_request(
     Ok((capability, event))
 }
 
+/// Approve only after verifying a signature from the declared resource owner.
+/// The caller must still ensure the identity key is active in its trusted resolver.
+pub fn approve_request_with_signature(
+    request: &PermissionRequest,
+    approver_key: &IdentityKey,
+    approved_at: u64,
+    signature: &[u8; 64],
+) -> Result<(Capability, AuditEvent), ApprovalError> {
+    request.validate().map_err(ApprovalError::InvalidRequest)?;
+    if approver_key.did() != request.resource_owner {
+        return Err(ApprovalError::ApproverNotResourceOwner);
+    }
+    approver_key
+        .verify(&request.approval_signing_payload(approved_at), signature)
+        .map_err(|_| ApprovalError::InvalidApproverSignature)?;
+    approve_request(request, approver_key.did(), approved_at)
+}
+
+fn append_field(output: &mut Vec<u8>, value: &str) {
+    append_u64(output, value.len() as u64);
+    output.extend_from_slice(value.as_bytes());
+}
+
+fn append_u64(output: &mut Vec<u8>, value: u64) {
+    output.extend_from_slice(&value.to_be_bytes());
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ApprovalError {
     InvalidRequest(RequestValidationError),
     EmptyApprover,
     ApproverNotResourceOwner,
+    InvalidApproverSignature,
     ApprovalOutsideRequestWindow,
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ed25519_dalek::{Signer, SigningKey};
 
     fn request() -> PermissionRequest {
         PermissionRequest {
@@ -168,6 +214,33 @@ mod tests {
                 occurred_at: 200,
                 capability_expires_at: 500,
             }
+        );
+    }
+
+    #[test]
+    fn signed_approval_requires_owner_key_and_exact_request_contents() {
+        let signer = SigningKey::from_bytes(&[23; 32]);
+        let owner_key = IdentityKey::from_public_key(signer.verifying_key().to_bytes()).unwrap();
+        let mut request = request();
+        request.resource_owner = owner_key.did().to_owned();
+        let payload = request.approval_signing_payload(200);
+        let signature = signer.sign(&payload).to_bytes();
+
+        assert!(approve_request_with_signature(&request, &owner_key, 200, &signature).is_ok());
+
+        let mut tampered = request.clone();
+        tampered.actions.push("data.write".into());
+        assert_eq!(
+            approve_request_with_signature(&tampered, &owner_key, 200, &signature),
+            Err(ApprovalError::InvalidApproverSignature)
+        );
+
+        let other_signer = SigningKey::from_bytes(&[24; 32]);
+        let other_key =
+            IdentityKey::from_public_key(other_signer.verifying_key().to_bytes()).unwrap();
+        assert_eq!(
+            approve_request_with_signature(&request, &other_key, 200, &signature),
+            Err(ApprovalError::ApproverNotResourceOwner)
         );
     }
 
