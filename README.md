@@ -19,7 +19,8 @@ Early foundation implementation. The first milestone is a small, auditable autho
 
 ## Repository map
 
-- `src/lib.rs` — initial capability authorization core
+- `src/lib.rs` — exact-match capability authorization core
+- `src/permissions.rs` — permission request validation, approval-to-capability conversion, and structured audit event types
 - `docs/ARCHITECTURE.md` — system boundaries and phased roadmap
 
 ## Initial local checks
