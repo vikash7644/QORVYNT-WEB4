@@ -21,7 +21,9 @@ Early foundation implementation. The first milestone is a small, auditable autho
 
 - `src/lib.rs` — exact-match capability authorization core
 - `src/permissions.rs` — permission request validation, approval-to-capability conversion, and structured audit event types
-- `src/identity.rs` — canonical key-derived DID identifiers, strict Ed25519 verification, and signed key rotation\n- `src/resolver.rs` — signed identity registration, rotation, revocation, and active-key resolution\n- `src/storage.rs` — append-only file-backed lifecycle log and signature-verified replay
+- `src/identity.rs` — canonical key-derived DID identifiers, strict Ed25519 verification, and signed key rotation
+- `src/resolver.rs` — signed identity registration, rotation, revocation, and active-key resolution
+- `src/storage.rs` — append-only file-backed lifecycle log and signature-verified replay
 - `docs/ARCHITECTURE.md` — system boundaries and phased roadmap
 
 ## Initial local checks
