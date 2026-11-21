@@ -225,7 +225,9 @@ mod tests {
         let mut request = request();
         request.resource_owner = owner_key.did().to_owned();
         let payload = request.approval_signing_payload(200);
-        let signature = signer.sign(&IdentityKey::signature_payload(&payload)).to_bytes();
+        let signature = signer
+            .sign(&IdentityKey::signature_payload(&payload))
+            .to_bytes();
 
         assert!(approve_request_with_signature(&request, &owner_key, 200, &signature).is_ok());
 
