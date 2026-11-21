@@ -1,7 +1,8 @@
 //! Permission request, approval, and audit-event data types.
 //!
-//! These are deterministic domain primitives only. They do not persist an
-//! append-only log, authenticate approvers, or provide cryptographic receipts.
+//! These are deterministic domain primitives. Signed approvals verify owner
+//! consent, but the caller must still check key activity in a trusted resolver.
+//! Audit events are not persisted by this module.
 
 use crate::{identity::IdentityKey, Action, Capability, PrincipalId, ResourceId};
 
