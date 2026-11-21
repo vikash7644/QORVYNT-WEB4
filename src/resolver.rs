@@ -110,8 +110,8 @@ impl IdentityResolver {
             return Err(ResolverError::IdentityNotActive);
         }
         let old_key = old.key.clone();
-        let new_key = IdentityKey::from_did(&rotation.new_did)
-            .map_err(|_| ResolverError::InvalidRotation)?;
+        let new_key =
+            IdentityKey::from_did(&rotation.new_did).map_err(|_| ResolverError::InvalidRotation)?;
         if self.records.contains_key(&rotation.new_did) {
             return Err(ResolverError::IdentityAlreadyExists);
         }
@@ -186,10 +186,7 @@ impl IdentityResolver {
     }
 
     fn check_timestamp(&self, timestamp: u64) -> Result<(), ResolverError> {
-        if self
-            .last_event_at
-            .is_some_and(|last| timestamp < last)
-        {
+        if self.last_event_at.is_some_and(|last| timestamp < last) {
             return Err(ResolverError::NonMonotonicTimestamp);
         }
         Ok(())
