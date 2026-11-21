@@ -21,7 +21,7 @@ pub struct PermissionRequest {
 impl PermissionRequest {
     /// Build an unambiguous, deterministic message for owner consent.
     pub fn approval_signing_payload(&self, approved_at: u64) -> Vec<u8> {
-        let mut payload = b"QORVYNT-WEB4-PERMISSION-APPROVAL-V1\\0".to_vec();
+        let mut payload = b"QORVYNT-WEB4-PERMISSION-APPROVAL-V1\0".to_vec();
         append_field(&mut payload, &self.id);
         append_field(&mut payload, &self.requester);
         append_field(&mut payload, &self.resource_owner);
@@ -224,7 +224,7 @@ mod tests {
         let mut request = request();
         request.resource_owner = owner_key.did().to_owned();
         let payload = request.approval_signing_payload(200);
-        let signature = signer.sign(&payload).to_bytes();
+        let signature = signer.sign(&IdentityKey::signature_payload(&payload)).to_bytes();
 
         assert!(approve_request_with_signature(&request, &owner_key, 200, &signature).is_ok());
 
