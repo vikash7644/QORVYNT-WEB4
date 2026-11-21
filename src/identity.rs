@@ -54,6 +54,11 @@ impl IdentityKey {
         &self.public_key
     }
 
+    /// Return the exact domain-separated bytes callers must sign.
+    pub fn signature_payload(message: &[u8]) -> Vec<u8> {
+        domain_payload(SIGNATURE_DOMAIN, message)
+    }
+
     /// Verify a domain-separated application message with strict Ed25519 checks.
     pub fn verify(&self, message: &[u8], signature: &[u8; 64]) -> Result<(), IdentityError> {
         let payload = domain_payload(SIGNATURE_DOMAIN, message);
