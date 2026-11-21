@@ -20,7 +20,8 @@ Early foundation implementation. The first milestone is a small, auditable autho
 ## Repository map
 
 - `src/lib.rs` — exact-match capability authorization core
-- `src/permissions.rs` — permission request validation, approval-to-capability conversion, and structured audit event types\n- `src/identity.rs` — canonical key-derived DID identifiers, strict Ed25519 verification, signed key rotation, and local revocation-time model
+- `src/permissions.rs` — permission request validation, approval-to-capability conversion, and structured audit event types
+- `src/identity.rs` — canonical key-derived DID identifiers, strict Ed25519 verification, signed key rotation, and local revocation-time model
 - `docs/ARCHITECTURE.md` — system boundaries and phased roadmap
 
 ## Initial local checks
