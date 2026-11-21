@@ -8,8 +8,8 @@ use std::collections::BTreeMap;
 
 use crate::identity::{IdentityError, IdentityKey, IdentityRecord, KeyRotation};
 
-const REGISTER_DOMAIN: &[u8] = b"QORVYNT-WEB4-IDENTITY-REGISTER-V1\\0";
-const REVOKE_DOMAIN: &[u8] = b"QORVYNT-WEB4-IDENTITY-REVOKE-V1\\0";
+const REGISTER_DOMAIN: &[u8] = b"QORVYNT-WEB4-IDENTITY-REGISTER-V1\0";
+const REVOKE_DOMAIN: &[u8] = b"QORVYNT-WEB4-IDENTITY-REVOKE-V1\0";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum IdentityEvent {
