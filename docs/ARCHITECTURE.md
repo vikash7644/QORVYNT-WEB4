@@ -52,7 +52,8 @@ A request is denied when any binding differs, the grant has expired, or it is re
 - [x] Validate explicit permission requests (non-empty, unique actions, bounded validity)
 - [x] Convert a declared resource-owner approval into an exact-scope capability
 - [x] Define structured approval audit event types
-- [ ] Authenticate the approver before accepting approval
+- [x] Verify resource-owner approval signatures against the declared owner key
+- [ ] Resolve owner keys and enforce active/revoked identity status before approval
 - [ ] Durable tamper-evident audit storage and resource-side enforcement middleware
 - [ ] Denial/revocation workflow and human-readable consent receipts
 
