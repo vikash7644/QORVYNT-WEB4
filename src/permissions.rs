@@ -147,6 +147,20 @@ pub fn approve_request(
     Ok((capability, event))
 }
 
+/// Approve only when the declared owner key resolves as active at approval time.
+/// This links cryptographic consent to the resolver's current identity state.
+pub fn approve_request_with_resolver(
+    request: &PermissionRequest,
+    resolver: &IdentityResolver,
+    approved_at: u64,
+    signature: &[u8; 64],
+) -> Result<(Capability, AuditEvent), ApprovalError> {
+    let approver_key = resolver
+        .resolve(&request.resource_owner, approved_at)
+        .ok_or(ApprovalError::ApproverIdentityNotActive)?;
+    approve_request_with_signature(request, approver_key, approved_at, signature)
+}
+
 /// Approve only after verifying a signature from the declared resource owner.
 /// The caller must still ensure the identity key is active in its trusted resolver.
 pub fn approve_request_with_signature(
@@ -180,6 +194,7 @@ pub enum ApprovalError {
     EmptyApprover,
     ApproverNotResourceOwner,
     InvalidApproverSignature,
+    ApproverIdentityNotActive,
     ApprovalOutsideRequestWindow,
 }
 
@@ -246,6 +261,51 @@ mod tests {
         assert_eq!(
             approve_request_with_signature(&request, &other_key, 200, &signature),
             Err(ApprovalError::ApproverNotResourceOwner)
+        );
+    }
+
+    #[test]
+    fn resolver_backed_approval_rejects_revoked_owner_keys() {
+        let signer = SigningKey::from_bytes(&[27; 32]);
+        let owner_key = IdentityKey::from_public_key(signer.verifying_key().to_bytes()).unwrap();
+        let mut request = request();
+        request.resource_owner = owner_key.did().to_owned();
+        let registration = IdentityResolver::registration_payload(owner_key.did(), 100);
+        let registration_proof = signer
+            .sign(&IdentityKey::signature_payload(&registration))
+            .to_bytes();
+        let mut resolver = IdentityResolver::new();
+        resolver
+            .register(owner_key.clone(), 100, &registration_proof)
+            .unwrap();
+
+        let approval_payload = request.approval_signing_payload(200);
+        let approval_signature = signer
+            .sign(&IdentityKey::signature_payload(&approval_payload))
+            .to_bytes();
+        assert!(approve_request_with_resolver(
+            &request,
+            &resolver,
+            200,
+            &approval_signature
+        )
+        .is_ok());
+
+        let revocation = IdentityResolver::revocation_payload(owner_key.did(), 300);
+        let revocation_signature = signer
+            .sign(&IdentityKey::signature_payload(&revocation))
+            .to_bytes();
+        resolver
+            .revoke(owner_key.did(), 300, &revocation_signature)
+            .unwrap();
+        assert_eq!(
+            approve_request_with_resolver(
+                &request,
+                &resolver,
+                300,
+                &approval_signature
+            ),
+            Err(ApprovalError::ApproverIdentityNotActive)
         );
     }
 
