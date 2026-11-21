@@ -31,4 +31,4 @@ cargo test
 cargo fmt --check
 ```
 
-The identity module defines a project-specific `did:qorvynt:` v1 key identifier; it is not a W3C DID-method conformance claim. Key verification and rotation primitives are implemented, but identity discovery, durable rotation/revocation history, key recovery, encrypted storage, network transport, and browser integration are not yet implemented.
+The identity module defines a project-specific `did:qorvynt:` v1 key identifier; it is not a W3C DID-method conformance claim. Strict Ed25519 verification, signed key rotation, and cryptographically verified owner-consent primitives are implemented. Durable identity resolution/revocation history, key recovery, encrypted storage, network transport, and browser integration are not yet implemented.
