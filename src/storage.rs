@@ -319,8 +319,7 @@ mod tests {
                 .to_bytes();
             persistent.register(old_key.clone(), 10, &proof).unwrap();
 
-            let rotation_payload =
-                KeyRotation::signing_payload(old_key.did(), new_key.did(), 20);
+            let rotation_payload = KeyRotation::signing_payload(old_key.did(), new_key.did(), 20);
             let rotation = KeyRotation {
                 old_did: old_key.did().to_owned(),
                 new_did: new_key.did().to_owned(),
