@@ -4,6 +4,8 @@
 //! capabilities. It does not authenticate identities, verify signatures, or
 //! access data/network resources.
 
+pub mod permissions;
+
 /// Stable application-level identifier for a user, agent, or service.
 pub type PrincipalId = String;
 
@@ -138,11 +140,21 @@ mod tests {
     fn denies_subject_and_resource_mismatches() {
         let grant = grant();
         assert_eq!(
-            grant.permits("did:qorvynt:agent:other", "vault:alice:profile", "data.read", 1_000),
+            grant.permits(
+                "did:qorvynt:agent:other",
+                "vault:alice:profile",
+                "data.read",
+                1_000
+            ),
             AuthorizationDecision::Deny(DenialReason::SubjectMismatch)
         );
         assert_eq!(
-            grant.permits("did:qorvynt:user:alice", "vault:other", "data.read", 1_000),
+            grant.permits(
+                "did:qorvynt:user:alice",
+                "vault:other",
+                "data.read",
+                1_000
+            ),
             AuthorizationDecision::Deny(DenialReason::ResourceMismatch)
         );
     }
