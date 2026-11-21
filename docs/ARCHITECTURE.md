@@ -40,6 +40,19 @@ A request is denied when any binding differs, the grant has expired, or it is re
 - [ ] CI validation and code review
 
 ### M1 — identity and key lifecycle
+- [ ] DID method specification and canonical encoding
+- [ ] Ed25519 key binding and signature verification
+- [ ] Key rotation, recovery, and revocation semantics
+- [ ] Test vectors and cross-implementation fixtures
+
+### M2 — agent permissions and audit (initial domain types)
+- [x] Validate explicit permission requests (non-empty, unique actions, bounded validity)
+- [x] Convert an authenticated owner approval into an exact-scope capability
+- [x] Define structured approval audit events
+- [ ] Authenticated consent UI and durable tamper-evident audit storage
+- [ ] Resource-side enforcement middleware
+
+### M1 — identity and key lifecycle
 - DID method specification and canonical encoding
 - Ed25519 key binding and signature verification
 - Key rotation, recovery, and revocation semantics
