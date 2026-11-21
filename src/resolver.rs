@@ -69,8 +69,13 @@ impl IdentityResolver {
         let mut resolver = Self::new();
         for operation in operations {
             match operation {
-                IdentityOperation::Register { did, created_at, proof } => {
-                    let key = IdentityKey::from_did(did).map_err(|_| ResolverError::InvalidRotation)?;
+                IdentityOperation::Register {
+                    did,
+                    created_at,
+                    proof,
+                } => {
+                    let key =
+                        IdentityKey::from_did(did).map_err(|_| ResolverError::InvalidRotation)?;
                     resolver.register(key, *created_at, proof)?;
                 }
                 IdentityOperation::Rotate(rotation) => resolver.rotate(rotation.clone())?,
