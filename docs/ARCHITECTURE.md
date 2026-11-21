@@ -18,7 +18,7 @@ Build a federated, user-controlled application network in which people can deleg
 - No token, coin, chain consensus, or wallet is required.
 - No implicit trust based on a domain, agent name, or network membership.
 - The `did:qorvynt:` identifier is a project-specific v1 draft, not a claim of W3C DID-method registration or conformance.
-- No production-ready identity resolver, key recovery, or durable revocation service is claimed.
+- The local file-backed identity log supports signed-operation replay; it is not a distributed resolver, key-recovery service, or tamper-proof audit system.
 - QORVYNT Lang and Fleur Network remain separate repositories and products.
 
 ## Authorization contract
@@ -45,7 +45,7 @@ A request is denied when any binding differs, the grant has expired, or it is re
 - [x] Verify domain-separated Ed25519 signatures with strict verification
 - [x] Require old-key authorization and new-key proof for rotation statements
 - [x] Model identity creation and revocation timestamps
-- [x] In-memory trusted-key resolver with signed registration, rotation, revocation, and append-only event history\n- [ ] Durable rotation/revocation history and resolver enforcement
+- [x] In-memory trusted-key resolver with signed registration, rotation, revocation, and append-only event history\n- [x] File-backed append-only identity operation log with signature-verified replay and fail-closed truncated-log handling\n- [ ] Tamper-evident checkpoints, multi-process coordination, and production resolver service
 - [ ] Key recovery, interoperability fixtures, and independent security review
 
 ### M2 — agent permissions and audit
@@ -53,7 +53,7 @@ A request is denied when any binding differs, the grant has expired, or it is re
 - [x] Convert a declared resource-owner approval into an exact-scope capability
 - [x] Define structured approval audit event types
 - [x] Verify resource-owner approval signatures against the declared owner key
-- [x] Resolve owner keys and enforce active/revoked identity status before approval (resolver API available; caller integration pending)
+- [x] Resolve owner keys and enforce active/revoked identity status before approval
 - [ ] Durable tamper-evident audit storage and resource-side enforcement middleware
 - [ ] Denial/revocation workflow and human-readable consent receipts
 
