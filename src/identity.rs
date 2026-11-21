@@ -215,8 +215,47 @@ mod tests {
         let mut tampered = rotation.clone();
         tampered.effective_at += 1;
         assert_eq!(
-            tampered.verify(&old_key),
+            tampered.verify(&old_key, &new_key),
             Err(IdentityError::InvalidSignature)
         );
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IdentityRecord {
+    pub key: IdentityKey,
+    pub created_at: u64,
+    /// Revocation takes effect at this timestamp, inclusive.
+    pub revoked_at: Option<u64>,
+}
+
+impl IdentityRecord {
+    pub fn is_active_at(&self, timestamp: u64) -> bool {
+        timestamp >= self.created_at
+            && self.revoked_at.is_none_or(|revoked_at| timestamp < revoked_at)
+    }
+}
+
+#[cfg(test)]
+mod lifecycle_tests {
+    use super::*;
+
+    #[test]
+    fn identity_record_enforces_creation_and_revocation_times() {
+        let key = IdentityKey::from_public_key(
+            ed25519_dalek::SigningKey::from_bytes(&[42; 32])
+                .verifying_key()
+                .to_bytes(),
+        )
+        .unwrap();
+        let record = IdentityRecord {
+            key,
+            created_at: 100,
+            revoked_at: Some(200),
+        };
+        assert!(!record.is_active_at(99));
+        assert!(record.is_active_at(100));
+        assert!(record.is_active_at(199));
+        assert!(!record.is_active_at(200));
     }
 }
