@@ -180,7 +180,7 @@ mod tests {
             Err(RequestValidationError::DuplicateAction)
         );
         assert_eq!(
-            approve_request(&request(), "owner", 500),
+            approve_request(&request(), "did:qorvynt:user:owner", 500),
             Err(ApprovalError::ApprovalOutsideRequestWindow)
         );
     }
